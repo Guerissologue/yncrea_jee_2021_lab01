@@ -112,7 +112,7 @@ public class DrugsServletBehaviourTestCase {
         assertThat(drugs).hasSize(3);
         assertThat(drugs.get(2).getName()).isEqualTo("Doliprane");
         assertThat(drugs.get(2).getLab()).isEqualTo("Sanofi");
-        verify(response,times(1)).sendRedirect(eq("contextPath/drugs"));
+        verify(response,times(1)).sendRedirect(eq(request.getServletContext().getContextPath()+"/drugs"));
     }
 
 }

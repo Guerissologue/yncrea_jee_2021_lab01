@@ -40,8 +40,6 @@ public class LoginServletBehaviourTestCase {
     @Mock
     private HttpSession session;
 
-
-
     @Test
     public void shouldNotHavePharmacistsBeforeInit() throws NoSuchFieldException, IllegalAccessException, ServletException {
         //GIVEN
@@ -92,20 +90,22 @@ public class LoginServletBehaviourTestCase {
         servlet.doGet(request, response);
         //THEN
         verify(session, times(1)).removeAttribute(eq("loggedPharmacist"));
-        verify(response, times(1)).sendRedirect(eq("contextPath/"));
+        verify(response, times(1)).sendRedirect(eq(request.getServletContext().getContextPath()));
     }
 
     @Test
     public void shouldNotLogoutIfUrlIsBad() throws ServletException, IOException {
         //GIVEN
         when(request.getQueryString()).thenReturn("someUrl");
+        when(request.getServletContext()).thenReturn(context);
+        when(context.getContextPath()).thenReturn("contextPath");
         LoginServlet servlet = new LoginServlet();
         ((HttpServlet)servlet).init();
         //WHEN
         servlet.doGet(request,response);
         //THEN
         verify(session,never()).removeAttribute(eq("loggedPharmacist"));
-        verify(response,never()).sendRedirect(eq("contextPath/"));
+        verify(response, never()).sendRedirect(eq(request.getServletContext().getContextPath()));
     }
 
     @Test
@@ -113,15 +113,14 @@ public class LoginServletBehaviourTestCase {
         //GIVEN
         when(request.getParameter(eq("login"))).thenReturn("loginTest");
         when(request.getParameter(eq("password"))).thenReturn("passwordTest");
-        when(request.getServletContext()).thenReturn(context);
-        when(context.getRequestDispatcher(anyString())).thenReturn(dispatcher);
+        when(request.getRequestDispatcher(anyString())).thenReturn(dispatcher);
         LoginServlet servlet = new LoginServlet();
         ((HttpServlet)servlet).init();
         //WHEN
         servlet.doPost(request, response);
         //THEN
         verify(request,times(1)).setAttribute(eq("loginError"), eq("Invalid credentials!"));
-        verify(context,times(1)).getRequestDispatcher(eq("/index.jsp"));
+        verify(request,times(1)).getRequestDispatcher(eq("/index.jsp"));
         verify(dispatcher,times(1)).forward(eq(request), eq(response));
     }
 
@@ -140,7 +139,7 @@ public class LoginServletBehaviourTestCase {
         //THEN
         verify(request,times(1)).removeAttribute(eq("loginError"));
         verify(session,times(1)).setAttribute(eq("loggedPharmacist"),eq (new Pharmacist("pharm1", "password1")));
-        verify(response,times(1)).sendRedirect(eq("contextPath/drugs"));
+        verify(response,times(1)).sendRedirect(eq(request.getServletContext().getContextPath()+"/drugs"));
 
     }
 

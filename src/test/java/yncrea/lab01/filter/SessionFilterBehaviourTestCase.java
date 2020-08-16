@@ -10,6 +10,7 @@ import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -39,10 +40,10 @@ public class SessionFilterBehaviourTestCase {
 
 
     @Test
-    public void shouldByPassIfUrlIsLogin() throws IOException, ServletException {
+    public void shouldTransmitIfUrlIsLogin() throws IOException, ServletException {
         //GIVEN
         when(request.getServletPath()).thenReturn("/login");
-        Filter filter = new SessionFilter();
+        HttpFilter filter = new SessionFilter();
         //WHEN
         filter.doFilter(request, response, chain);
         //THEN
@@ -51,7 +52,7 @@ public class SessionFilterBehaviourTestCase {
     }
 
     @Test
-    public void shouldByPassIfUrlIsIndexJsp() throws IOException, ServletException {
+    public void shouldTransmitIfUrlIsIndexJsp() throws IOException, ServletException {
         //GIVEN
         when(request.getServletPath()).thenReturn("/index.jsp");
         Filter filter = new SessionFilter();
@@ -63,7 +64,7 @@ public class SessionFilterBehaviourTestCase {
     }
 
     @Test
-    public void shouldByPassIfAlreadyLoggedIn() throws IOException, ServletException {
+    public void shouldTransmitIfAlreadyLoggedIn() throws IOException, ServletException {
         //GIVEN
         when(session.getAttribute(eq("loggedPharmacist"))).thenReturn(new Pharmacist("pharm","pwd"));
         when(request.getSession()).thenReturn(session);
@@ -77,7 +78,7 @@ public class SessionFilterBehaviourTestCase {
     }
 
     @Test
-    public void shouldRedirectToLogIn() throws IOException, ServletException {
+    public void shouldBlockAndRedirectToLogIn() throws IOException, ServletException {
         //GIVEN
         when(session.getAttribute(eq("loggedPharmacist"))).thenReturn(null);
         when(request.getSession()).thenReturn(session);
@@ -88,7 +89,7 @@ public class SessionFilterBehaviourTestCase {
         //WHEN
         filter.doFilter(request, response, chain);
         //THEN
-        verify(response, times(1)).sendRedirect("contextPath/");
+        verify(response, times(1)).sendRedirect(request.getServletContext().getContextPath());
         verify(chain, never()).doFilter(eq(request), eq(response));
     }
 
